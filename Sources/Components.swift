@@ -9,6 +9,7 @@ import Foundation
 
 struct Constants {
     // UserDefaults keys
+    static let database = "asapty_database"
     static let firstRunKey = "asapty_first_run_key"
     static let attributionSendKey = "asapty_attribution_send_key"
     // Server APIs
@@ -29,16 +30,16 @@ final class Storage {
     }()
     
     class func storeValue<T>(value: T, forKey key: String) {
-        UserDefaults.standard.set(value, forKey: key)
+        UserDefaults(suiteName: Constants.database)?.set(value, forKey: key)
     }
     
     class func value<T>(forKey key: String) -> T? {
-        guard let value = UserDefaults.standard.value(forKey: key) as? T else { return nil }
+        guard let value = UserDefaults(suiteName: Constants.database)?.value(forKey: key) as? T else { return nil }
         return value
     }
     
     class func deleteValue(forKey key: String) {
-        UserDefaults.standard.removeObject(forKey: key)
+        UserDefaults(suiteName: Constants.database)?.removeObject(forKey: key)
     }
 }
 
