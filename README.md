@@ -9,7 +9,7 @@
 
 Apple Search Ads attributions in one line of code.
 ```swift
-        ASAPTY.shared.attribution(withASAPTYToken: "#########")
+        ASAPTY.shared.attribution(with: "#########")
 ```
 
 To track In-App Events:
