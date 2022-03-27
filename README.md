@@ -6,6 +6,7 @@
 [![Swift Package Manager](https://img.shields.io/badge/SwiftPM-compatible-yellowgreen.svg)](https://swift.org/package-manager)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![Swift 5](https://img.shields.io/badge/language-Swift5-orange.svg)](https://developer.apple.com/swift)
+[![Powered by Tuist](https://img.shields.io/badge/Powered%20by-Tuist-blue)](https://tuist.io)
 
 Apple Search Ads attributions in one line of code.
 ```swift
