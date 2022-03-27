@@ -1,5 +1,4 @@
 import ProjectDescription
-import ProjectDescriptionHelpers
 
 let sdk = Target(name: "ASAPTY_SDK",
                  platform: .iOS,
