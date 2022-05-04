@@ -10,7 +10,7 @@ let sdk = Target(name: "ASAPTY_SDK",
                      "Sources/**/*",
                  ]),
                  dependencies: [
-                    .sdk(name: "AdServices.framework", status: .optional)
+                    .sdk(name: "AdServices", type: .framework, status: .optional)
                  ],
                  environment: [:])
 let example = Target(name: "ASAPTY Example",

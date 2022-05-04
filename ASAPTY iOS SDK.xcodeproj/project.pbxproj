@@ -219,7 +219,7 @@
 			};
 			buildConfigurationList = 58B771BFEB7F5B432D3F3264 /* Build configuration list for PBXProject "ASAPTY iOS SDK" */;
 			compatibilityVersion = "Xcode 13.0";
-			developmentRegion = ru;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
@@ -299,7 +299,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.asapty.sdk.example;
 				PRODUCT_NAME = ASAPTY;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.6;
@@ -327,7 +326,6 @@
 				PRODUCT_NAME = ASAPTY_SDK;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.6;
@@ -415,7 +413,6 @@
 				PRODUCT_NAME = ASAPTY_SDK;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -440,7 +437,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.asapty.sdk.example;
 				PRODUCT_NAME = ASAPTY;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
