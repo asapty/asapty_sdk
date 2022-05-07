@@ -15,27 +15,29 @@ final class NetworkWorker {
     
     public func attribution(withToken token: String) {
         userToken = token
-        if let _: Data = Storage.value(forKey: Constants.attributionSendKey) { return }
-        
         if #available(iOS 14.3, *) {
+            if let data: Data = Storage.value(forKey: Constants.serverPollingID),
+               let serverResponse = try? JSONDecoder().decode(ServerPollingResponse.self, from: data) {
+                if !serverResponse.failed, !serverResponse.completed {
+                    pollingServerID(serverResponse.id)
+                } else {
+                    return
+                }
+            }
+            
             guard let attributionToken = try? AAAttribution.attributionToken() else { return }
+            let _ = Storage.firstRunDate
             DispatchQueue.global().async { [weak self] in
                 guard let self = self else { return }
-                self.requestAttribution(with: attributionToken) { result in
-                    switch result {
-                    case .failure:
-                        return
-                    case let .success(response):
-                        self.sendAttribution(withToken: token, appleResponse: response)
-                    }
-                }
+                self.putAttributionToken(attr: attributionToken)
             }
         }
     }
     
     public func track(eventName: String, productId: String?, revenue: String?, currency: String?) {
-        guard let encodedData: Data = Storage.value(forKey: Constants.attributionSendKey),
-              var rawData = try? JSONSerialization.jsonObject(with: encodedData, options: .mutableContainers) as? [String: Any] else { return }
+        guard let data: Data = Storage.value(forKey: Constants.serverPollingID),
+        let serverResponse = try? JSONDecoder().decode(ServerPollingResponse.self, from: data) else { return }
+        var rawData = [String: Any]()
         rawData["event_name"] = eventName
         let innerJson = ["af_content_id": productId ?? "",
                          "af_revenue": revenue ?? "",
@@ -43,6 +45,9 @@ final class NetworkWorker {
         guard let innerJSONData = try? JSONSerialization.data(withJSONObject: innerJson, options: []) else { return }
         let innerJSONDataString = String(data: innerJSONData, encoding: String.Encoding.ascii)
         rawData["json"] = innerJSONDataString
+        rawData["attributionId"] = serverResponse.id
+        rawData["source"] = "sdk_\(Constants.currentSDKVersion)"
+        rawData["install_time"] = "\(Int64(Storage.firstRunDate.timeIntervalSince1970))"
         var apiPath: String
         #if DEBUG
         apiPath = Constants.serverDEVAPI
@@ -62,29 +67,73 @@ final class NetworkWorker {
         }).resume()
     }
     
-    private func requestAttribution(with token: String, completion: @escaping (Result<[String: Any], Error>) -> ()) {
-        var request = URLRequest(url: URL(string: Constants.appleAttributionAPI)!)
-        request.httpMethod = "POST"
-        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-        request.httpBody = Data(token.utf8)
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-            }
+    private func putAttributionToken(attr: String) {
+        var apiPath: String
+        #if DEBUG
+        apiPath = Constants.serverByTokenDEVAPI
+        #else
+        apiPath = Constants.serverByTokenAPI
+        #endif
+        
+        var request = URLRequest(url: URL(string:apiPath)!)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let uploadData = [
+            "token": attr,
+            "asaptyId": "\(userToken)",
+            "source": "sdk_\(Constants.currentSDKVersion)"
+        ]
+        let encodedData = try? JSONSerialization.data(withJSONObject: uploadData, options: [])
+        request.httpBody = encodedData
+        URLSession.shared.dataTask(with: request, completionHandler: { [weak self] data, response, error in
+            guard let self = self, error == nil,
+                  let data = data,
+                  let rawData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let result = rawData["result"], let resultData = try? JSONSerialization.data(withJSONObject: result, options: []),
+                  let serverResponse = try? JSONDecoder().decode(ServerPollingResponse.self, from: resultData)
+            else { return }
             
-            guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
-                let error = NSError(domain: "com.asapty.sdk", code: 100, userInfo: nil)
-                completion(.failure(error))
-                return
-            }
+            Storage.storeValue(value: resultData, forKey: Constants.serverPollingID)
+            print("STORE ID \(serverResponse.id)")
             
-            guard let rawData = data, let attribution = try? JSONSerialization.jsonObject(with: rawData, options: []) as? [String: Any] else {
-                let error = NSError(domain: "com.asapty.sdk", code: 100, userInfo: nil)
-                completion(.failure(error))
-                return
+            if serverResponse.failed { return }
+            
+            if !serverResponse.completed {
+                self.pollingServerID(serverResponse.id)
             }
-            completion(.success(attribution))
-        }.resume()
+        }).resume()
+    }
+    
+    private func pollingServerID(_ id: String) {
+        var apiPath: String
+        #if DEBUG
+        apiPath = "\(Constants.serverByTokenDEVAPI)/?id=\(id)"
+        #else
+        apiPath = "\(Constants.serverByTokenAPI)/?id=\(id)"
+        #endif
+        
+        var request = URLRequest(url: URL(string:apiPath)!)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        URLSession.shared.dataTask(with: request, completionHandler: { [weak self] data, response, error in
+            guard let self = self, error == nil,
+                  let data = data,
+                  let rawData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let result = rawData["result"], let resultData = try? JSONSerialization.data(withJSONObject: result, options: []),
+                  let serverResponse = try? JSONDecoder().decode(ServerPollingResponse.self, from: resultData)
+            else { return }
+            
+            Storage.storeValue(value: resultData, forKey: Constants.serverPollingID)
+            print("STORE ID FROM POLLING \(serverResponse.id)")
+            
+            if serverResponse.failed { return }
+            
+            if !serverResponse.completed {
+                Dispatcher.background.async(delay: 1) { [weak self] in
+                    self?.pollingServerID(serverResponse.id)
+                }
+            }
+        }).resume()
     }
     
     private func sendAttribution(withToken token: String, appleResponse: [String: Any]) {

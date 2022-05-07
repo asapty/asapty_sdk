@@ -12,10 +12,13 @@ struct Constants {
     static let database = "asapty_database"
     static let firstRunKey = "asapty_first_run_key"
     static let attributionSendKey = "asapty_attribution_send_key"
+    static let serverPollingID = "server_polling_ID"
+    static let currentSDKVersion = "0.3.0"
     // Server APIs
     static let serverAPI = "https://asapty.com/_api/mmpEvents/"
     static let serverDEVAPI = "https://dev.asapty.com/_api/mmpEvents/"
-    static let appleAttributionAPI = "https://api-adservices.apple.com/api/v1/"
+    static let serverByTokenDEVAPI = "https://dev.asapty.com/_api/mmpEvents/byToken"
+    static let serverByTokenAPI = "https://asapty.com/_api/mmpEvents/byToken"
 }
 
 final class Storage {
@@ -40,6 +43,28 @@ final class Storage {
     
     class func deleteValue(forKey key: String) {
         UserDefaults(suiteName: Constants.database)?.removeObject(forKey: key)
+    }
+}
+
+struct ServerPollingResponse: Decodable {
+    enum EncodingKeys: String, CodingKey {
+        case id
+        case status
+        case completed
+        case failed
+    }
+    
+    let id: String
+    let status: String
+    let completed: Bool
+    let failed: Bool
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: EncodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        status = try container.decode(String.self, forKey: .status)
+        completed = try container.decode(Bool.self, forKey: .completed)
+        failed = try container.decode(Bool.self, forKey: .failed)
     }
 }
 
