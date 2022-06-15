@@ -10,7 +10,6 @@ import CoreGraphics
 
 public class ASAPTY: NSObject {
     @objc public static let shared = ASAPTY()
-
     
     /// ASAPTY SDK initialization
     /// - Parameter asaptyId: user own asaptyid
@@ -20,7 +19,6 @@ public class ASAPTY: NSObject {
             NetworkWorker.shared.attribution(withToken: asaptyId)
         }
     }
-    
     
     /// Method is responsible for tracking user's events
     /// - Parameters:
@@ -33,5 +31,10 @@ public class ASAPTY: NSObject {
         if #available(iOS 14.3, *) {
             NetworkWorker.shared.track(eventName: eventName, productId: productId, revenue: revenue, currency: currency)
         }
+    }
+    
+    @objc
+    public func subscribeForInAppEvents() {
+        InAppListener.shared.subscribe()
     }
 }

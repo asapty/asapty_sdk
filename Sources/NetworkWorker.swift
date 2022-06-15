@@ -94,8 +94,6 @@ final class NetworkWorker {
             else { return }
             
             Storage.storeValue(value: resultData, forKey: Constants.serverPollingID)
-            print("STORE ID \(serverResponse.id)")
-            
             if serverResponse.failed { return }
             
             if !serverResponse.completed {
@@ -124,8 +122,6 @@ final class NetworkWorker {
             else { return }
             
             Storage.storeValue(value: resultData, forKey: Constants.serverPollingID)
-            print("STORE ID FROM POLLING \(serverResponse.id)")
-            
             if serverResponse.failed { return }
             
             if !serverResponse.completed {
@@ -157,7 +153,25 @@ final class NetworkWorker {
         URLSession.shared.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil, let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else { return }
             Storage.storeValue(value: encodedData, forKey: Constants.attributionSendKey)
-            print("STORE RESPONSE")
+        }).resume()
+    }
+    
+    public func sendInAppReceipt(receipt: ReceiptValidation) {
+        var apiPath: String
+        #if DEBUG
+        apiPath = Constants.serverVerifyReceiptDEVAPI
+        #else
+        apiPath = Constants.serverVerifyReceiptAPI
+        #endif
+        
+        var request = URLRequest(url: URL(string:apiPath)!)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let uploadData = receipt.dictionaryRepresentation()
+        let encodedData = try? JSONSerialization.data(withJSONObject: uploadData, options: [])
+        request.httpBody = encodedData
+        URLSession.shared.dataTask(with: request, completionHandler: { data, response, error in
+            guard error == nil, let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else { return }
         }).resume()
     }
 }
