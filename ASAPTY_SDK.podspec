@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'ASAPTY_SDK'
-  s.version          = '0.4.0'
+  s.version          = '0.4.1'
   s.summary          = 'iOS library for apple search ads attribution'
 
   s.description      = <<-DESC

@@ -37,13 +37,13 @@ final public class InAppListener: NSObject, SKPaymentTransactionObserver, SKProd
     
     private func processProducts() {
         guard let receiptURL = Bundle.main.appStoreReceiptURL,
-              let receipt = try? Data(contentsOf: receiptURL),
-              let attributionId: String = Storage.value(forKey: Constants.attributionSendKey) else { return }
+              let receipt = try? Data(contentsOf: receiptURL)/*,
+              let attributionId: String = Storage.value(forKey: Constants.attributionSendKey)*/ else { return }
         var storedEvents: [ReceiptValidation] = Storage.value(forKey: Constants.inAppEventsKey) ?? []
         products.forEach { product in
             let validationModel = ReceiptValidation(receiptData: receipt.base64EncodedString(),
                                                     bundleId: Bundle.main.bundleIdentifier ?? "",
-                                                    attributionId: attributionId,
+                                                    attributionId: "blablabla",
                                                     amount: product.value.localizedPrice ?? "",
                                                     transactionId: product.key)
             if !storedEvents.contains(where: { receipt in
