@@ -13,7 +13,12 @@ let package = Package(
         .target(
             name: "ASAPTY_SDK",
             path: "Sources"
-        )
+        ),
+        .testTarget(
+            name: "ASAPTY_SDK_TESTS",
+            dependencies: ["ASAPTY_SDK"],
+            path: "Tests"
+        ),
     ],
     swiftLanguageVersions: [.v5]
 )
