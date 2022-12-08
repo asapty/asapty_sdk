@@ -12,6 +12,16 @@ final public class InAppListener: NSObject, SKPaymentTransactionObserver, SKProd
     public static let shared = InAppListener()
     
     private var products = [String: SKProduct]()
+    private var productsRequest: SKProductsRequest? {
+        willSet {
+            productsRequest?.delegate = nil
+            productsRequest?.cancel()
+        }
+        didSet {
+            productsRequest?.delegate = self
+            productsRequest?.start()
+        }
+    }
     
     func subscribe() {
         SKPaymentQueue.default().add(self)
@@ -24,8 +34,7 @@ final public class InAppListener: NSObject, SKPaymentTransactionObserver, SKProd
             let productId = $0.payment.productIdentifier
             productsIDs.insert(productId)
         }
-        let productRequest: SKProductsRequest = SKProductsRequest(productIdentifiers: productsIDs)
-        productRequest.delegate = self
+        productsRequest = SKProductsRequest(productIdentifiers: productsIDs)
     }
     
     public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
