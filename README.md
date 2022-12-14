@@ -10,14 +10,19 @@
 
 Apple Search Ads attributions in one line of code.
 ```swift
-        ASAPTY.shared.attribution(with: "#########")
+ASAPTY.shared.attribution(with: "#########")
 ```
 
 To track In-App Events:
 
 ```swift
-        ASAPTY.shared.track(eventName: "inapp_purchase", productId: "com.sdk.asapty", revenue: "3.0", currency: "USD")
+ASAPTY.shared.subscribeForInAppEvents()
 ```
+or track events manually using:
+```swift
+ASAPTY.shared.track(eventName: "inapp_purchase", productId: "com.sdk.asapty", revenue: "3.0", currency: "USD")
+```
+
 
 
 
@@ -26,7 +31,7 @@ To track In-App Events:
 ### Cocoapods:
 
 ```ruby
-pod 'ASAPTY'
+pod 'ASAPTY_SDK'
 ```
 ### Swift Package Manager:
 
