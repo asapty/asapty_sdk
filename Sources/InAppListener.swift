@@ -22,6 +22,21 @@ final public class InAppListener: NSObject, SKPaymentTransactionObserver, SKProd
             productsRequest?.start()
         }
     }
+
+    private var receiptValidations: [ReceiptValidation]? {
+        get {
+            guard let storedData: [Data] = Storage.value(forKey: Constants.inAppEventsKey) else { return nil }
+            return storedData.compactMap {
+                try? JSONDecoder().decode(ReceiptValidation.self, from: $0)
+            }
+        }
+        set {
+            let eventsToStore = newValue?.compactMap {
+                try? JSONEncoder().encode($0)
+            }
+            Storage.storeValue(value: eventsToStore, forKey: Constants.inAppEventsKey)
+        }
+    }
     
     func subscribe() {
         SKPaymentQueue.default().add(self)
@@ -43,12 +58,12 @@ final public class InAppListener: NSObject, SKPaymentTransactionObserver, SKProd
         }
         processProducts()
     }
-    
+
     private func processProducts() {
         guard let receiptURL = Bundle.main.appStoreReceiptURL,
               let receipt = try? Data(contentsOf: receiptURL)/*,
               let attributionId: String = Storage.value(forKey: Constants.attributionSendKey)*/ else { return }
-        var storedEvents: [ReceiptValidation] = Storage.value(forKey: Constants.inAppEventsKey) ?? []
+        var storedEvents = receiptValidations ?? []
         products.forEach { product in
             let validationModel = ReceiptValidation(receiptData: receipt.base64EncodedString(),
                                                     bundleId: Bundle.main.bundleIdentifier ?? "",
@@ -61,13 +76,13 @@ final public class InAppListener: NSObject, SKPaymentTransactionObserver, SKProd
                 storedEvents.append(validationModel)
             }
         }
-        Storage.storeValue(value: storedEvents, forKey: Constants.inAppEventsKey)
+        receiptValidations = storedEvents
         sendEvents()
     }
     
     private func sendEvents() {
-        guard let storedEvents: [ReceiptValidation] = Storage.value(forKey: Constants.inAppEventsKey) else { return }
-        for (index, value) in storedEvents.enumerated() {
+        guard let storedEvents = receiptValidations else { return }
+        for value in storedEvents {
             guard !value.processed else { continue }
             NetworkWorker.shared.sendInAppReceipt(receipt: value)
         }
